@@ -7,7 +7,7 @@ import (
 )
 
 func Handler(r *chi.Mux) {
-    r.User(chimiddle.StripSlashes)
+    r.Use(chimiddle.StripSlashes)
 
     r.Route("/account", func(router chi.Router) {
         router.Use(middleware.Authorization)
