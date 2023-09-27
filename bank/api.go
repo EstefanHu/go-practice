@@ -6,7 +6,9 @@ import (
     "fmt"
     "github.com/gorilla/mux"
     "log"
+    "os"
     "strconv"
+    jwt "github.com/golang-jwt/jwt/v4"
 )
 
 type APIServer struct {
@@ -124,8 +126,29 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 func withJWTAuth(handlerFunc http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         fmt.Println("calling JWT auth middleware")
+
+        tokenString := r.Header.Get("x-jwt-token")
+
+        _, err := validateJWT(tokenString)
+        if err != nil {
+            WriteJSON(w, http.StatusForbidden, ApiError{Error: "invalid token"})
+            return 
+        }
+
         handlerFunc(w, r)
     }
+}
+
+func validateJWT(tokenString string) (*jwt.Token, error) {
+    secret := os.Getenv("JWT_SECRET")
+
+    return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+        }
+
+        return []byte(secret), nil
+    })
 }
 
 type apiFunc func(http.ResponseWriter, *http.Request) error
