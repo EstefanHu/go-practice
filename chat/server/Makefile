@@ -1,14 +1,14 @@
 postgresinit:
-	sudo docker run --name postgres15 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:15-alpine
+	docker run --name go-practice -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=password -d postgres:15-alpine
 
 postgres:
-	sudo docker exec -it postgres15 psql
+	docker exec -it go-practice psql
 
 createdb:
-	sudo docker exec -it postgres15 createdb --username=root --owner=root go-chat
+	docker exec -it go-practice createdb --username=root --owner=root go-chat
 
 dropdb:
-	sudo docker exec -it postgres15 dropdb go-chat
+	docker exec -it go-practice dropdb go-chat
 
 .PHONY: postgresinit
 
