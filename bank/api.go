@@ -130,6 +130,8 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
     return json.NewEncoder(w).Encode(v)
 }
 
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50TnVtYmVyIjozMjU0OTMsImV4cHJpZXNBdCI6MTUwMDB9.aRcan89FjLZdKJ7bTjnF_sK-a5dEPN95tc2g9fHnM7Y
+
 func createJWT (account *Account) (string, error) {
     claims := &jwt.MapClaims{
         "expriesAt": 15000,
@@ -139,7 +141,7 @@ func createJWT (account *Account) (string, error) {
     secret := os.Getenv("JWT_SECRET")
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-    return token.SignedString(secret)
+    return token.SignedString([]byte(secret))
 }
 
 func withJWTAuth(handlerFunc http.HandlerFunc) http.HandlerFunc {
@@ -148,11 +150,23 @@ func withJWTAuth(handlerFunc http.HandlerFunc) http.HandlerFunc {
 
         tokenString := r.Header.Get("x-jwt-token")
 
-        _, err := validateJWT(tokenString)
+        token, err := validateJWT(tokenString)
         if err != nil {
             WriteJSON(w, http.StatusForbidden, ApiError{Error: "invalid token"})
             return 
         }
+        if !token.Valid() {
+            WriteJSON(w, http.StatusForbidden, ApiError{Error: "invalid token"})
+            return
+        }
+
+        account, err := store.GetUserByJWTToken(token)
+
+
+        claims := token.Claims.(jwt.MapClaims)
+        if claims["ID"] == account.ID
+
+        fmt.Println(claims)
 
         handlerFunc(w, r)
     }
