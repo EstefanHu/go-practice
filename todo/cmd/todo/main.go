@@ -2,7 +2,7 @@ package main
 
 import (
     "flag"
-    "todo"
+    "github.com/estefanhu/go-practice/todo"
     "os"
     "fmt"
 )
